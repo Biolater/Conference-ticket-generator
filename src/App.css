@@ -1,0 +1,18 @@
+#root {
+  width: 100%;
+}
+
+body {
+  background: url("../images/background-mobile.png");
+  min-height: 100svh;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+header {
+  background: url("../images/pattern-lines.svg");
+  background-repeat: no-repeat;
+}
