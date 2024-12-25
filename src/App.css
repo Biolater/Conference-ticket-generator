@@ -60,3 +60,22 @@ header::after {
 label {
   font-size: 1.25rem;
 }
+
+form {
+  position: relative;
+  overflow: hidden;
+}
+
+form::after {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  bottom: -3rem;
+  width: 20rem;
+  height: 20rem;
+  background: url("../images/pattern-squiggly-line-bottom.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  z-index: -1;
+}
