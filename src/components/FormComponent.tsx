@@ -2,36 +2,38 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import uploadIcon from "../../images/icon-upload.svg";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 
 // Accepted file types and max size
 const ACCEPTED_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
-const MAX_FILE_SIZE = 500 * 1024;
+const MAX_FILE_SIZE = 5000 * 1024;
 
 // Zod validation schema
 const schema = z.object({
-  avatar: z.instanceof(File).superRefine((file, ctx) => {
-    if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+  avatar: z.instanceof(File, { message: "File is required" }).superRefine((file, ctx) => {
+    let fileType = file.type.split(";")[0];
+    if (!fileType) fileType = file.name.split(".").pop()?.toLowerCase() || "";
+    if (!ACCEPTED_FILE_TYPES.includes(fileType)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: `File must be one of [${ACCEPTED_FILE_TYPES.join(
           ", "
-        )}] but was ${file.type.toString()}`,
+        )}] but was ${fileType}`,
       });
     }
     if (file.size > MAX_FILE_SIZE) {
       ctx.addIssue({
         code: z.ZodIssueCode.too_big,
-        message: `File too large. Please upload a photo under 500KB`,
+        message: `File too large. Please upload a photo under 5MB`,
         maximum: MAX_FILE_SIZE,
         inclusive: false,
         type: "number",
       });
     }
   }),
-  fullName: z.string().min(1, { message: "Name is required" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  githubUsername: z.string().min(1, { message: "Github username is required" }),
+  fullName: z.string().nonempty({ message: "Name is required" }).transform((name) => name.trim()),
+  email: z.string().nonempty({ message: "Email is required" }).email({ message: "Please enter a valid email address" }).transform((email) => email.toLowerCase()),
+  githubUsername: z.string().nonempty({ message: "Username is required" }).transform((username) => username.trim()),
 });
 
 const FormComponent = () => {
@@ -39,22 +41,25 @@ const FormComponent = () => {
   const dragAreaRef = useRef<HTMLDivElement | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState, setValue, trigger } = useForm({
-    resolver: zodResolver(schema),
-  });
+  const { register, handleSubmit, formState, setValue, trigger, clearErrors } =
+    useForm({
+      resolver: zodResolver(schema),
+    });
 
   const onSubmit = (data: any) => {
     console.log("Form data:", data);
   };
 
   // Handle file input change
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // test avatar from schema on file
-      setValue("avatar", file)
-      const isValid = await trigger("avatar")
-      if(isValid) {
+      setValue("avatar", file);
+      const isValid = await trigger("avatar");
+      if (isValid) {
         const imageUrl = URL.createObjectURL(file);
         setAvatarUrl(imageUrl);
       }
@@ -101,7 +106,7 @@ const FormComponent = () => {
 
   return (
     <form
-      className="px-4 pt-8 pb-32 flex flex-col gap-5 text-neutral-0 container mx-auto"
+      className="px-4 py-8 max-w-xl flex flex-col gap-5 text-neutral-0 container mx-auto"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col gap-2">
@@ -120,7 +125,7 @@ const FormComponent = () => {
           >
             {avatarUrl ? (
               <img
-                className="rounded-xl object-cover"
+                className="rounded-xl object-cover w-full h-full"
                 src={avatarUrl}
                 alt="Avatar"
               />
@@ -132,7 +137,11 @@ const FormComponent = () => {
             <div className="flex gap-2">
               <button
                 className="font-light text-sm bg-neutral-500/20 px-2 py-1 rounded-md"
-                onClick={() => setAvatarUrl(null)}
+                onClick={() => {
+                  setAvatarUrl(null);
+                  clearErrors("avatar");
+                  setValue("avatar", null);
+                }}
               >
                 Remove Image
               </button>
@@ -202,6 +211,12 @@ const FormComponent = () => {
           className="outline-none border-2 focus:outline-2 focus:outline-neutral-700 border-neutral-700 p-3 rounded-xl bg-neutral-300/10 backdrop-blur"
           placeholder="e.g. Stephen King"
         />
+        {formState.errors.fullName &&
+          typeof formState.errors.fullName.message === "string" && (
+            <p className="text-red-500 text-sm">
+              {formState.errors.fullName.message}
+            </p>
+          )}
       </div>
       <div className="flex flex-col gap-2">
         <label htmlFor="email">Email Address</label>
@@ -212,6 +227,12 @@ const FormComponent = () => {
           className="outline-none border-2 focus:outline-2 focus:outline-neutral-700 border-neutral-700 p-3 rounded-xl bg-neutral-300/10 backdrop-blur"
           placeholder="example@email.com"
         />
+        {formState.errors.email &&
+          typeof formState.errors.email.message === "string" && (
+            <p className="text-red-500 text-sm">
+              {formState.errors.email.message}
+            </p>
+          )}
       </div>
       <div className="flex flex-col gap-2">
         <label htmlFor="githubUsername">Github Username</label>
@@ -222,6 +243,12 @@ const FormComponent = () => {
           className="outline-none border-2 focus:outline-2 focus:outline-neutral-700 border-neutral-700 p-3 rounded-xl bg-neutral-300/10 backdrop-blur"
           placeholder="@yourusername"
         />
+        {formState.errors.githubUsername &&
+          typeof formState.errors.githubUsername.message === "string" && (
+            <p className="text-red-500 text-sm">
+              {formState.errors.githubUsername.message}
+            </p>
+          )}
       </div>
       <button
         type="submit"

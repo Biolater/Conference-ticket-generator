@@ -10,8 +10,22 @@ body {
   background-size: cover;
   background-attachment: fixed;
   overflow-x: hidden;
+  position: relative;
 }
 
+body::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  bottom: -4rem;
+  width: 20rem;
+  height: 14rem;
+  background: url("../images/pattern-squiggly-line-bottom.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: -1;
+}
 body::after {
   background: url("../images/pattern-lines.svg");
   position: absolute;
@@ -66,16 +80,66 @@ form {
   overflow: hidden;
 }
 
-form::after {
-  content: "";
-  position: absolute;
-  left: -0.5rem;
-  bottom: -3rem;
-  width: 20rem;
-  height: 20rem;
-  background: url("../images/pattern-squiggly-line-bottom.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  z-index: -1;
+@media (min-width: 640px) {
+  body {
+    background: url("../images/background-desktop.png");
+    min-height: 100svh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  body::before{
+    width: 24rem;
+    height: 18rem;
+    left: 0;
+  }
+
+  header::before {
+    left: 1rem;
+    top: -3rem;
+    width: 8rem;
+    height: 8rem;
+  }
+
+  header::after {
+    width: 12rem;
+    height: 6rem;
+  }
+}
+
+@media (min-width: 768px) {
+
+  body::before{
+    width: 28rem;
+    height: 20rem;
+  }
+
+  header::before {
+    left: 2rem;
+    top: -4.5rem;
+    width: 10rem;
+    height: 10rem;
+  }
+
+  header::after {
+    width: 14rem;
+    height: 8rem;
+    top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  body::before{
+    width: 32rem;
+    height: 24rem;
+  }
+
+  header::after {
+    width: 20rem;
+    height: 10rem;
+    top: 2rem;
+  }
 }
