@@ -11,6 +11,8 @@ export default {
         "neutral-900": "hsl(248, 70%, 10%)",
         "orange-500": "hsl(7, 88%, 67%)",
         "orange-700": "hsl(7, 71%, 60%)",
+        "text-gradient-from": "hsl(7, 88%, 67%)",
+        "text-gradient-to": "hsl(0, 0%, 100%)",
       },
     },
   },

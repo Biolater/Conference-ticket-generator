@@ -133,8 +133,10 @@ form {
 @media (min-width: 1024px) {
 
   body::before{
-    width: 32rem;
-    height: 24rem;
+    width: 45rem;
+    height: 32rem;
+    background-position: left top;
+    bottom: -12rem;
   }
 
   header::after {

@@ -10,44 +10,76 @@ const MAX_FILE_SIZE = 5000 * 1024;
 
 // Zod validation schema
 const schema = z.object({
-  avatar: z.instanceof(File, { message: "File is required" }).superRefine((file, ctx) => {
-    let fileType = file.type.split(";")[0];
-    if (!fileType) fileType = file.name.split(".").pop()?.toLowerCase() || "";
-    if (!ACCEPTED_FILE_TYPES.includes(fileType)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `File must be one of [${ACCEPTED_FILE_TYPES.join(
-          ", "
-        )}] but was ${fileType}`,
-      });
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.too_big,
-        message: `File too large. Please upload a photo under 5MB`,
-        maximum: MAX_FILE_SIZE,
-        inclusive: false,
-        type: "number",
-      });
-    }
-  }),
-  fullName: z.string().nonempty({ message: "Name is required" }).transform((name) => name.trim()),
-  email: z.string().nonempty({ message: "Email is required" }).email({ message: "Please enter a valid email address" }).transform((email) => email.toLowerCase()),
-  githubUsername: z.string().nonempty({ message: "Username is required" }).transform((username) => username.trim()),
+  avatar: z
+    .instanceof(File, { message: "File is required" })
+    .or(z.undefined())
+    .superRefine((file, ctx) => {
+      if (!file) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "File is required",
+        });
+        return;
+      }
+      let fileType = file?.type.split(";")[0];
+      if (!fileType)
+        fileType = file?.name.split(".").pop()?.toLowerCase() || "";
+      if (!ACCEPTED_FILE_TYPES.includes(fileType)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `File must be one of [${ACCEPTED_FILE_TYPES.join(
+            ", "
+          )}] but was ${fileType}`,
+        });
+      }
+      if (file?.size && file?.size > MAX_FILE_SIZE) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.too_big,
+          message: `File too large. Please upload a photo under 5MB`,
+          maximum: MAX_FILE_SIZE,
+          inclusive: false,
+          type: "number",
+        });
+      }
+    }),
+  fullName: z
+    .string()
+    .nonempty({ message: "Name is required" })
+    .transform((name) => name.trim()),
+  email: z
+    .string()
+    .nonempty({ message: "Email is required" })
+    .email({ message: "Please enter a valid email address" })
+    .transform((email) => email.toLowerCase()),
+  githubUsername: z
+    .string()
+    .nonempty({ message: "Username is required" })
+    .transform((username) => username.trim()),
 });
 
-const FormComponent = () => {
+type FormComponentProps = {
+  onSubmitSuccess: () => void;
+}
+
+const FormComponent: React.FC<FormComponentProps> = ({ onSubmitSuccess }) => {
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const dragAreaRef = useRef<HTMLDivElement | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState, setValue, trigger, clearErrors } =
-    useForm({
+  const { register, handleSubmit, formState, setValue, trigger, clearErrors, reset } =
+    useForm<z.infer<typeof schema>>({
       resolver: zodResolver(schema),
     });
 
-  const onSubmit = (data: any) => {
-    console.log("Form data:", data);
+  const onSubmit = (data: z.infer<typeof schema>) => {
+    const { email, fullName, githubUsername } = data;
+    localStorage.setItem("email", email);
+    localStorage.setItem("fullName", fullName);
+    localStorage.setItem("githubUsername", githubUsername);
+    localStorage.setItem("avatarUrl", avatarUrl || "");
+    setAvatarUrl(null)
+    reset();
+    onSubmitSuccess();
   };
 
   // Handle file input change
@@ -140,7 +172,7 @@ const FormComponent = () => {
                 onClick={() => {
                   setAvatarUrl(null);
                   clearErrors("avatar");
-                  setValue("avatar", null);
+                  setValue("avatar", undefined);
                 }}
               >
                 Remove Image
