@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import FormComponent from "./components/FormComponent";
 import HeaderComponent from "./components/HeaderComponent";
+import TicketComponent from "./components/TicketComponent";
 
 function App() {
   const [fullName, setFullName] = useState<string | null>(null);
@@ -11,21 +12,25 @@ function App() {
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
   useEffect(() => {
-      const storedFullName = localStorage.getItem("fullName");
-      const storedEmail = localStorage.getItem("email");
-      const storedGithubUsername = localStorage.getItem("githubUsername");
-      const storedAvatarUrl = localStorage.getItem("avatarUrl");
-      setFullName(storedFullName);
-      setEmail(storedEmail);
-      setGithubUsername(storedGithubUsername);
-      setAvatarUrl(storedAvatarUrl);
+    const storedFullName = localStorage.getItem("fullName");
+    const storedEmail = localStorage.getItem("email");
+    const storedGithubUsername = localStorage.getItem("githubUsername");
+    const storedAvatarUrl = localStorage.getItem("avatarUrl");
+    setFullName(storedFullName);
+    setEmail(storedEmail);
+    setGithubUsername(storedGithubUsername);
+    setAvatarUrl(storedAvatarUrl);
   }, [updateTrigger]);
   return (
     <>
       <HeaderComponent fullName={fullName} email={email} />
-      <FormComponent
-        onSubmitSuccess={() => setUpdateTrigger((prev) => prev + 1)}
-      />
+      {!fullName && !email && !githubUsername && !avatarUrl ? (
+        <FormComponent
+          onSubmitSuccess={() => setUpdateTrigger((prev) => prev + 1)}
+        />
+      ) : (
+        <TicketComponent />
+      )}
     </>
   );
 }
