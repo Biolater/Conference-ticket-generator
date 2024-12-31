@@ -145,3 +145,13 @@ form {
     top: 2rem;
   }
 }
+
+.id-number{
+  writing-mode: vertical-rl;
+}
+
+.ticket-component {
+  background-image: url("../images/pattern-ticket.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
